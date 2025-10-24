@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Modal, Button, message } from 'antd';
+import { Modal, Button} from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { Company } from '../data/companyData';
 import * as companyApi from '../api/company/api';
+import { customToast } from '../utils/useCustomToast';
 
 interface DeleteCompanyModalProps {
   isOpen: boolean;
@@ -27,11 +28,11 @@ const DeleteCompanyModal = ({ isOpen, onClose, onDeleteCompany, company }: Delet
       }
       
       onDeleteCompany(company.id);
-      message.success(response.message || 'Company deleted successfully!');
+      customToast.success(response.message || 'Company deleted successfully!');
       onClose();
     } catch (error: any) {
       const errorMessage = error?.message || 'Failed to delete company. Please try again.';
-      message.error(errorMessage);
+      customToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

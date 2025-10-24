@@ -263,10 +263,10 @@ const SettingsPage = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       console.log('Saving admin info:', adminInfo);
-      alert('Admin information updated successfully!');
+      customToast.success('Admin information updated successfully!');
     } catch (error) {
       console.error('Error saving admin info:', error);
-      alert('Failed to update admin information. Please try again.');
+      customToast.error('Failed to update admin information. Please try again.');
     } finally {
       setIsAdminLoading(false);
     }
