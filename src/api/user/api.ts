@@ -422,16 +422,17 @@ export async function getUserProfile(): Promise<GetProfileResponse> {
 }
 
 // Password Reset API
-export const PASSWORD_RESET_ENDPOINT = 'user/reset_password';
+export const PASSWORD_RESET_ENDPOINT = 'user/update_password';
 
 export function getPasswordResetUrl(): string {
   const baseUrl = getApiBaseUrl();
   const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  console.log('Password Reset URL:', `${normalizedBaseUrl}/${PASSWORD_RESET_ENDPOINT}`);
   return `${normalizedBaseUrl}/${PASSWORD_RESET_ENDPOINT}`;
 }
 
 export interface PasswordResetPayload {
-  oldPassword: string;
+  old_password: string;
   password: string;
 }
 
@@ -455,12 +456,14 @@ export async function resetPassword(payload: PasswordResetPayload): Promise<Pass
   let response: Response;
   try {
     response = await fetch(url, {
-      method: 'POST',
+      method: 'PATCH',
       headers,
       body: JSON.stringify(payload),
-      mode: 'cors', // Explicitly set CORS mode
-      credentials: 'omit', // Handle mixed content
+      mode: 'cors', 
+      credentials: 'omit', 
     });
+    localStorage.removeItem('auth_token');
+    window.location.replace('/login');
   } catch (err: any) {
     console.error('Network error:', err);
     throw new Error('Network error. Please check your internet connection and API configuration.');

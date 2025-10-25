@@ -43,7 +43,6 @@ const SettingsPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Fetch user profile on component mount
   useEffect(() => {
     const fetchProfile = async () => {
       if (!isAuthenticated) {
@@ -86,7 +85,6 @@ const SettingsPage = () => {
     fetchProfile();
   }, [isAuthenticated]);
 
-  // Validation functions
   const validateAdminName = (name: string): string | undefined => {
     if (!name.trim()) return 'Administrator name is required';
     if (name.length < 2) return 'Administrator name must be at least 2 characters';
@@ -236,7 +234,6 @@ const SettingsPage = () => {
     }
   };
 
-
   const handleSaveAdminInfo = async () => {
     // Validate all fields
     const errors: ValidationErrors = {};
@@ -297,7 +294,7 @@ const SettingsPage = () => {
     try {
       // Call the password reset API
       const response = await resetPassword({
-        oldPassword: passwordInfo.currentPassword,
+        old_password: passwordInfo.currentPassword,
         password: passwordInfo.newPassword
       });
       
