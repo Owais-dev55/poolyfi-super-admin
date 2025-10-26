@@ -79,9 +79,9 @@ const CompanyManagement = () => {
   // Filter and sort companies
   const filteredCompanies = companies
     .filter(company => {
-    const matchesSearch = company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         company.industry.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = company.name.toLowerCase().includes(searchTerm.toLowerCase()) 
+                        //  company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        //  company.industry.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesIndustry = industryFilter === 'All Industries' || company.industry === industryFilter;
     return matchesSearch && matchesIndustry;
     })
