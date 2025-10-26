@@ -55,7 +55,7 @@ const Leaderboard = () => {
         setIsLoading(true);
         const params = {
           page: currentPage,
-          industryId: industryFilter === 'All Industries' ? undefined : getIndustryId(industryFilter),
+          // industryId: industryFilter === 'All Industries' ? undefined : getIndustryId(industryFilter),
           search: searchTerm || undefined
         };
         
@@ -81,18 +81,6 @@ const Leaderboard = () => {
   }, [currentPage, industryFilter, searchTerm]);
 
   // Helper function to get industry ID from name
-  const getIndustryId = (industryName: string): number => {
-    const industryMap: { [key: string]: number } = {
-      'Technology': 1,
-      'Finance': 2,
-      'Healthcare': 3,
-      'Energy': 4,
-      'Manufacturing': 5,
-      'Retail': 6,
-      'Education': 7
-    };
-    return industryMap[industryName] || 1;
-  };
 
 
   // Helper function to generate initials from company name
