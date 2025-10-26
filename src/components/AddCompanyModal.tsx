@@ -1,10 +1,18 @@
-import { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, Button } from 'antd';
-import { BankOutlined, MailOutlined, PhoneOutlined, GlobalOutlined, TeamOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
-import * as api from '../api/company/api';
-import * as industriesApi from '../api/industries/api';
-import * as companySizesApi from '../api/companySizes/api';
-import { useCustomToast } from '../utils/useCustomToast';
+import { useState, useEffect } from "react";
+import { Modal, Form, Input, Select, Button } from "antd";
+import {
+  BankOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  GlobalOutlined,
+  TeamOutlined,
+  UserOutlined,
+  LockOutlined,
+} from "@ant-design/icons";
+import * as api from "../api/company/api";
+import * as industriesApi from "../api/industries/api";
+import * as companySizesApi from "../api/companySizes/api";
+import { useCustomToast } from "../utils/useCustomToast";
 
 interface CompanyFormData {
   companyName: string;
@@ -26,12 +34,20 @@ interface AddCompanyModalProps {
   onAddCompany: (company: CompanyFormData) => void;
 }
 
-const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps) => {
+const AddCompanyModal = ({
+  isOpen,
+  onClose,
+  onAddCompany,
+}: AddCompanyModalProps) => {
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
-  const [industryOptions, setIndustryOptions] = useState<{ value: number; label: string }[]>([]);
+  const [industryOptions, setIndustryOptions] = useState<
+    { value: number; label: string }[]
+  >([]);
   const [isLoadingIndustries, setIsLoadingIndustries] = useState(false);
-  const [sizeOptions, setSizeOptions] = useState<{ value: number; label: string }[]>([]);
+  const [sizeOptions, setSizeOptions] = useState<
+    { value: number; label: string }[]
+  >([]);
   const [isLoadingSizes, setIsLoadingSizes] = useState(false);
   const { showToast } = useCustomToast();
 
@@ -39,56 +55,59 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
   useEffect(() => {
     const fetchData = async () => {
       if (!isOpen) return; // Only fetch when modal is open
-      
-      // Fetch industries
+
       setIsLoadingIndustries(true);
       try {
         const industriesResponse = await industriesApi.getIndustries();
         if (industriesResponse.data && Array.isArray(industriesResponse.data)) {
-          const industryOptions = industriesResponse.data.map((industry: industriesApi.Industry) => ({
-            value: industry.id,
-            label: industry.name,
-          }));
+          const industryOptions = industriesResponse.data.map(
+            (industry: industriesApi.Industry) => ({
+              value: industry.id,
+              label: industry.name,
+            })
+          );
           setIndustryOptions(industryOptions);
         }
       } catch (error: any) {
-        console.error('Failed to fetch industries:', error);
-        showToast('error', 'Failed to load industries. Using default options.');
-        // Fallback to default options
+        console.error("Failed to fetch industries:", error);
+        showToast("error", "Failed to load industries. Using default options.");
         setIndustryOptions([
-          { value: 1, label: 'IT' },
-          { value: 2, label: 'Finance' },
-          { value: 3, label: 'Healthcare' },
-          { value: 4, label: 'Energy' },
-          { value: 5, label: 'Manufacturing' },
-          { value: 6, label: 'Retail' },
-          { value: 7, label: 'Education' },
-          { value: 8, label: 'Other' },
+          { value: 1, label: "IT" },
+          { value: 2, label: "Finance" },
+          { value: 3, label: "Healthcare" },
+          { value: 4, label: "Energy" },
+          { value: 5, label: "Manufacturing" },
+          { value: 6, label: "Retail" },
+          { value: 7, label: "Education" },
+          { value: 8, label: "Other" },
         ]);
       } finally {
         setIsLoadingIndustries(false);
       }
 
-      // Fetch company sizes
       setIsLoadingSizes(true);
       try {
         const sizesResponse = await companySizesApi.getCompanySizes();
         if (sizesResponse.data && Array.isArray(sizesResponse.data)) {
-          const sizeOptions = sizesResponse.data.map((size: companySizesApi.CompanySize) => ({
-            value: size.id,
-            label: size.sizeText,
-          }));
+          const sizeOptions = sizesResponse.data.map(
+            (size: companySizesApi.CompanySize) => ({
+              value: size.id,
+              label: size.sizeText,
+            })
+          );
           setSizeOptions(sizeOptions);
         }
       } catch (error: any) {
-        console.error('Failed to fetch company sizes:', error);
-        showToast('error', 'Failed to load company sizes. Using default options.');
-        // Fallback to default options
+        console.error("Failed to fetch company sizes:", error);
+        showToast(
+          "error",
+          "Failed to load company sizes. Using default options."
+        );
         setSizeOptions([
-          { value: 1, label: '1-50 employees' },
-          { value: 2, label: '51-200 employees' },
-          { value: 3, label: '201-1000 employees' },
-          { value: 4, label: '1000+ employees' },
+          { value: 1, label: "1-50 employees" },
+          { value: 2, label: "51-200 employees" },
+          { value: 3, label: "201-1000 employees" },
+          { value: 4, label: "1000+ employees" },
         ]);
       } finally {
         setIsLoadingSizes(false);
@@ -98,41 +117,42 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
     fetchData();
   }, [isOpen]);
 
-  const handleSubmit = async (values: CompanyFormData) => {
+  const handleSubmit = async (values: any) => {
     setIsLoading(true);
-    
     try {
       const payload: api.CreateCompanyPayload = {
         name: values.companyName,
-        address: values.address,
-        email: values.email,
-        phone: values.phoneNumber,
+        address: values.companyAddressHidden,
+        email: values.companyEmailHidden,
+        phone: values.companyPhoneHidden,
         websiteUrl: values.website,
         industryId: values.industryId,
         sizeId: values.sizeId,
         ownerName: values.ownerName,
-        ownerEmail: values.ownerEmail,
-        ownerPhone: values.ownerPhone,
-        ownerPassword: values.ownerPassword,
+        ownerEmail: values.ownerEmailHidden,
+        ownerPhone: values.ownerPhoneHidden,
+        ownerPassword: values.ownerPasswordHidden,
       };
 
       const response = await api.createCompany(payload);
-      
-      // Check if the API response indicates an error
+
       if (response.hasError) {
-        // Show error message from API response
-        showToast('error', response.message || 'Failed to create company. Please try again.');
-        return; // Don't close modal or reset form on error
+        showToast(
+          "error",
+          response.message || "Failed to create company. Please try again."
+        );
+        return;
       }
-      
-      // Success case
+
       onAddCompany(values);
-      showToast('success', response.message || 'Company added successfully!');
+      showToast("success", response.message || "Company added successfully!");
       form.resetFields();
       onClose();
     } catch (error: any) {
-      const errorMessage = error?.message || 'Failed to add company. Please try again.';
-      showToast('error', errorMessage);
+      showToast(
+        "error",
+        error?.message || "Failed to add company. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -155,27 +175,36 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
       onCancel={handleCancel}
       footer={null}
       width={520}
-      destroyOnHidden
+      destroyOnClose
       zIndex={1000}
     >
       <Form
         form={form}
+        autoComplete="off"
         layout="vertical"
         onFinish={handleSubmit}
-        className="mt-3"
+        className="mt-3 overflow-y-auto max-h-[70vh] pr-2"
       >
+        {/* Hidden dummy fields to trick Chrome */}
+        <input
+          type="text"
+          name="fakeusernameremembered"
+          style={{ display: "none" }}
+        />
+        <input
+          type="password"
+          name="fakepasswordremembered"
+          style={{ display: "none" }}
+        />
+
         {/* Company Name */}
         <Form.Item
           name="companyName"
-          label={<span className="text-sm">Company Name</span>}
-          rules={[
-            { required: true, message: 'Please enter the company name' },
-            { min: 2, message: 'Company name must be at least 2 characters' },
-            { max: 100, message: 'Company name must not exceed 100 characters' },
-            { pattern: /^[a-zA-Z0-9\s\-&.,()]+$/, message: 'Company name can only contain letters, numbers, spaces, and basic punctuation' }
-          ]}
+          label="Company Name"
+          rules={[{ required: true, message: "Please enter the company name" }]}
         >
           <Input
+            autoComplete="off"
             prefix={<BankOutlined className="text-gray-400 text-xs" />}
             placeholder="Enter company name"
             size="middle"
@@ -184,31 +213,34 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
 
         {/* Company Address */}
         <Form.Item
-          name="address"
-          label={<span className="text-sm">Company Address</span>}
+          name="companyAddressHidden"
+          label="Company Address"
           rules={[
-            { required: true, message: 'Please enter the company address' },
-            { min: 5, message: 'Address must be at least 5 characters' },
-            { max: 200, message: 'Address must not exceed 200 characters' }
+            { required: true, message: "Please enter the company address" },
           ]}
         >
           <Input
+            name="address_hidden"
+            id="addr-field"
+            autoComplete="new-password"
             prefix={<BankOutlined className="text-gray-400 text-xs" />}
             placeholder="Enter company address"
             size="middle"
           />
         </Form.Item>
 
-        {/* Email Address */}
+        {/* Company Email */}
         <Form.Item
-          name="email"
-          label={<span className="text-sm">Email Address</span>}
+          name="companyEmailHidden"
+          label="Email Address"
           rules={[
-            { required: true, message: 'Please enter the email address' },
-            { type: 'email', message: 'Please enter a valid email address' }
+            { required: true, message: "Please enter the email address" },
           ]}
         >
           <Input
+            name="email_hidden"
+            id="email-field"
+            autoComplete="new-password"
             prefix={<MailOutlined className="text-gray-400 text-xs" />}
             placeholder="contact@company.com"
             size="middle"
@@ -217,24 +249,27 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
 
         {/* Phone Number */}
         <Form.Item
-          name="phoneNumber"
+          name="CompanyPhoneHidden"
           label={<span className="text-sm">Phone Number</span>}
           rules={[
-            { required: true, message: 'Please enter the phone number' },
-            { 
+            { required: true, message: "Please enter the phone number" },
+            {
               validator: (_, value) => {
                 if (!value) return Promise.resolve();
-                
+
                 // Remove all non-digit characters for validation
-                const cleanNumber = value.replace(/\D/g, '');
-                
+                const cleanNumber = value.replace(/\D/g, "");
+
                 // Check if it's a valid Pakistani mobile number
-                if (cleanNumber.startsWith('92') && cleanNumber.length === 12) {
+                if (cleanNumber.startsWith("92") && cleanNumber.length === 12) {
                   const mobilePart = cleanNumber.substring(2);
                   if (mobilePart.match(/^[3][0-9]{9}$/)) {
                     return Promise.resolve();
                   }
-                } else if (cleanNumber.startsWith('0') && cleanNumber.length === 11) {
+                } else if (
+                  cleanNumber.startsWith("0") &&
+                  cleanNumber.length === 11
+                ) {
                   const mobilePart = cleanNumber.substring(1);
                   if (mobilePart.match(/^[3][0-9]{9}$/)) {
                     return Promise.resolve();
@@ -244,13 +279,20 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
                     return Promise.resolve();
                   }
                 }
-                
-                return Promise.reject(new Error('Please enter a valid Pakistani mobile number (e.g., +92-300-1234567, 0300-1234567, or 3001234567)'));
-              }
-            }
+
+                return Promise.reject(
+                  new Error(
+                    "Please enter a valid Pakistani mobile number (e.g., +92-300-1234567, 0300-1234567, or 3001234567)"
+                  )
+                );
+              },
+            },
           ]}
         >
           <Input
+            autoComplete="new-password"
+            name="phone_hidden"
+            id="phone-field"
             prefix={<PhoneOutlined className="text-gray-400 text-xs" />}
             placeholder="+92-300-1234567 or 0300-1234567"
             size="middle"
@@ -260,11 +302,13 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
         {/* Industry */}
         <Form.Item
           name="industryId"
-          label={<span className="text-sm">Industry</span>}
-          rules={[{ required: true, message: 'Please select an industry' }]}
+          label="Industry"
+          rules={[{ required: true, message: "Please select an industry" }]}
         >
           <Select
-            placeholder={isLoadingIndustries ? "Loading industries..." : "Select industry"}
+            placeholder={
+              isLoadingIndustries ? "Loading industries..." : "Select industry"
+            }
             size="middle"
             options={industryOptions}
             loading={isLoadingIndustries}
@@ -276,11 +320,15 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
         {/* Company Size */}
         <Form.Item
           name="sizeId"
-          label={<span className="text-sm">Company Size</span>}
-          rules={[{ required: true, message: 'Please select company size' }]}
+          label="Company Size"
+          rules={[{ required: true, message: "Please select company size" }]}
         >
           <Select
-            placeholder={isLoadingSizes ? "Loading company sizes..." : "Select company size"}
+            placeholder={
+              isLoadingSizes
+                ? "Loading company sizes..."
+                : "Select company size"
+            }
             size="middle"
             options={sizeOptions}
             loading={isLoadingSizes}
@@ -289,24 +337,20 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
           />
         </Form.Item>
 
-
         {/* Website */}
         <Form.Item
           name="website"
-          label={<span className="text-sm">Website</span>}
-          rules={[
-            { required: true, message: 'Please enter the website URL' },
-            { type: 'url', message: 'Please enter a valid website URL' }
-          ]}
+          label="Website"
+          rules={[{ required: true, message: "Please enter the website URL" }]}
         >
           <Input
+            autoComplete="off"
             prefix={<GlobalOutlined className="text-gray-400 text-xs" />}
             placeholder="https://company.com"
             size="middle"
           />
         </Form.Item>
 
-        {/* Owner Information Section */}
         <div className="border-t pt-4 mt-4">
           <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
             <UserOutlined className="text-blue-600 text-xs mr-1" />
@@ -317,14 +361,12 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
         {/* Owner Name */}
         <Form.Item
           name="ownerName"
-          label={<span className="text-sm">Owner Name</span>}
-          rules={[
-            { required: true, message: 'Please enter the owner name' },
-            { min: 2, message: 'Owner name must be at least 2 characters' },
-            { max: 50, message: 'Owner name must not exceed 50 characters' }
-          ]}
+          label="Owner Name"
+          rules={[{ required: true, message: "Please enter the owner name" }]}
         >
           <Input
+            autoComplete="new-password"
+            name="ownerName"
             prefix={<UserOutlined className="text-gray-400 text-xs" />}
             placeholder="Enter owner name"
             size="middle"
@@ -333,14 +375,14 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
 
         {/* Owner Email */}
         <Form.Item
-          name="ownerEmail"
-          label={<span className="text-sm">Owner Email</span>}
-          rules={[
-            { required: true, message: 'Please enter the owner email' },
-            { type: 'email', message: 'Please enter a valid email address' }
-          ]}
+          name="ownerEmailHidden"
+          label="Owner Email"
+          rules={[{ required: true, message: "Please enter the owner email" }]}
         >
           <Input
+            name="owner_email_hidden"
+            id="owner-email-field"
+            autoComplete="new-password"
             prefix={<MailOutlined className="text-gray-400 text-xs" />}
             placeholder="owner@company.com"
             size="middle"
@@ -349,40 +391,16 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
 
         {/* Owner Phone */}
         <Form.Item
-          name="ownerPhone"
-          label={<span className="text-sm">Owner Phone</span>}
+          name="ownerPhoneHidden"
+          label="Owner Phone"
           rules={[
-            { required: true, message: 'Please enter the owner phone number' },
-            { 
-              validator: (_, value) => {
-                if (!value) return Promise.resolve();
-                
-                // Remove all non-digit characters for validation
-                const cleanNumber = value.replace(/\D/g, '');
-                
-                // Check if it's a valid Pakistani mobile number
-                if (cleanNumber.startsWith('92') && cleanNumber.length === 12) {
-                  const mobilePart = cleanNumber.substring(2);
-                  if (mobilePart.match(/^[3][0-9]{9}$/)) {
-                    return Promise.resolve();
-                  }
-                } else if (cleanNumber.startsWith('0') && cleanNumber.length === 11) {
-                  const mobilePart = cleanNumber.substring(1);
-                  if (mobilePart.match(/^[3][0-9]{9}$/)) {
-                    return Promise.resolve();
-                  }
-                } else if (cleanNumber.length === 10) {
-                  if (cleanNumber.match(/^[3][0-9]{9}$/)) {
-                    return Promise.resolve();
-                  }
-                }
-                
-                return Promise.reject(new Error('Please enter a valid Pakistani mobile number (e.g., +92-300-1234567, 0300-1234567, or 3001234567)'));
-              }
-            }
+            { required: true, message: "Please enter the owner phone number" },
           ]}
         >
           <Input
+            name="owner_phone_hidden"
+            id="owner-phone-field"
+            autoComplete="new-password"
             prefix={<PhoneOutlined className="text-gray-400 text-xs" />}
             placeholder="+92-300-1234567 or 0300-1234567"
             size="middle"
@@ -391,22 +409,48 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
 
         {/* Owner Password */}
         <Form.Item
-          name="ownerPassword"
-          label={<span className="text-sm">Owner Password</span>}
+          name="ownerPasswordHidden"
+          label="Owner Password"
           rules={[
-            { required: true, message: 'Please enter the owner password' },
-            { min: 6, message: 'Password must be at least 6 characters' },
-            { max: 50, message: 'Password must not exceed 50 characters' }
+            { required: true, message: "Please enter the owner password" },
+            () => ({
+              validator(_, value) {
+                if (!value) return Promise.resolve();
+
+                const missing: string[] = [];
+
+                if (value.length < 8) missing.push("• At least 8 characters");
+                if (!/[A-Z]/.test(value))
+                  missing.push("• One uppercase letter");
+                if (!/[a-z]/.test(value))
+                  missing.push("• One lowercase letter");
+                if (!/[0-9]/.test(value)) missing.push("• One number");
+                if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value))
+                  missing.push("• One special character");
+
+                if (missing.length > 0) {
+                  return Promise.reject(
+                    new Error(`Password must contain:\n${missing.join("\n")}`)
+                  );
+                }
+
+                return Promise.resolve();
+              },
+            }),
           ]}
+          hasFeedback
         >
           <Input.Password
+            name="owner_password_hidden"
+            id="owner-password-field"
+            autoComplete="new-password"
             prefix={<LockOutlined className="text-gray-400 text-xs" />}
             placeholder="Enter owner password"
             size="middle"
           />
         </Form.Item>
 
-        {/* Action Buttons */}
+        {/* Buttons */}
         <Form.Item className="mb-0 mt-4">
           <div className="flex justify-end space-x-2">
             <Button
@@ -416,16 +460,19 @@ const AddCompanyModal = ({ isOpen, onClose, onAddCompany }: AddCompanyModalProps
             >
               Cancel
             </Button>
-
             <Button
               type="primary"
               htmlType="submit"
               loading={isLoading}
               size="middle"
               className="px-6 text-sm"
-              style={{ backgroundColor: '#FFC11E', borderColor: '#FFC11E', color: 'black' }}
+              style={{
+                backgroundColor: "#FFC11E",
+                borderColor: "#FFC11E",
+                color: "black",
+              }}
             >
-              {isLoading ? 'Adding Company...' : 'Add Company'}
+              {isLoading ? "Adding Company..." : "Add Company"}
             </Button>
           </div>
         </Form.Item>
