@@ -118,6 +118,7 @@ const Leaderboard = () => {
     efficiency: company.efficiency
   }));
 
+  const fetchIndustry = Array.from(new Set(apiCompanies.map(c => c.industry)));
   // Use API data if available, otherwise show empty array (no fallback to static data)
   const companiesToShow = apiCompanies.length > 0 ? displayCompanies : [];
 
@@ -310,13 +311,9 @@ const Leaderboard = () => {
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black appearance-none bg-white text-black cursor-pointer"
                   >
                     <option value="All Industries">All Industries</option>
-                    <option value="Technology">Technology</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Energy">Energy</option>
-                    <option value="Manufacturing">Manufacturing</option>
-                    <option value="Retail">Retail</option>
-                    <option value="Education">Education</option>
+                    {fetchIndustry.map((industry) => (
+                      <option key={industry} value={industry}>{industry}</option>
+                    ))}
                   </select>
                 </div>
               </div>
