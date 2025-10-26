@@ -249,6 +249,12 @@ export interface LogoutResponse {
   message: string;
 }
 
+window.addEventListener('storage', (event) => {
+  if (event.key === 'auth_token' && event.newValue === null) {
+    window.location.replace('/login');
+  }
+});
+
 export async function logoutUser(): Promise<LogoutResponse> {
   const url = getLogoutUrl();
 
@@ -261,65 +267,33 @@ export async function logoutUser(): Promise<LogoutResponse> {
     headers['Authorization'] = `Bearer ${superAdminToken}`;
   }
 
-  let response: Response;
   try {
-    response = await fetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers,
-      mode: 'cors', // Explicitly set CORS mode
-      credentials: 'omit', // Handle mixed content
+      mode: 'cors',
+      credentials: 'omit',
     });
-  } catch (err: any) {
-    console.error('Network error:', err);
-    throw new Error('Network error. Please check your internet connection and API configuration.');
-  }
 
-  const parseErrorMessage = async (): Promise<string> => {
-    try {
-      const json = await response.clone().json();
-      if (typeof json === 'string') return json;
-      if (json?.message) return String(json.message);
-      if (json?.error) return String(json.error);
-      if (Array.isArray(json?.errors) && json.errors[0]?.message) {
-        return String(json.errors[0].message);
-      }
-    } catch {
-      // ignore json parse errors
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(message || 'Logout failed');
     }
-    try {
-      const text = await response.text();
-      if (text) return text;
-    } catch {
-      // ignore text read errors
-    }
-    switch (response.status) {
-      case 401:
-        return 'Unauthorized. Please verify your admin token.';
-      case 403:
-        return 'Access denied. You do not have permission to logout.';
-      case 500:
-        return 'Server error. Please try again later.';
-      default:
-        return `Failed to logout with status ${response.status}.`;
-    }
-  };
 
-  if (!response.ok) {
-    const message = await parseErrorMessage();
-    throw new Error(message);
-  }
+    localStorage.removeItem('auth_token');
 
-  try {
-    const data = await response.json();
-    return data;
-  } catch {
-    // If response is not JSON, assume success
+    window.location.replace('/login');
+
     return {
       hasError: false,
-      message: 'Logged out successfully'
+      message: 'Logged out successfully',
     };
+  } catch (err: any) {
+    console.error('Logout error:', err);
+    throw new Error('Failed to logout. ' + err.message);
   }
 }
+
 
 // Profile API
 export const PROFILE_ENDPOINT = 'profile';

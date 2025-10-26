@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { loginAdmin, logoutUser } from '../api/user/api';
 import { customToast } from '../utils/useCustomToast';
 
@@ -17,9 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 
@@ -32,16 +30,28 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     typeof window !== 'undefined' ? Boolean(localStorage.getItem('auth_token')) : false
   );
 
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'auth_token' && event.newValue === null) {
+        
+        setIsAuthenticated(false);
+        customToast.info('You have been logged out in another tab');
+        window.location.replace('/login'); 
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   const login = async ({ email, password }: LoginCredentials) => {
     const data = await loginAdmin(email, password);
 
     // Store user and session if present
-    if (data?.data?.user) {
-      localStorage.setItem('user_data', JSON.stringify(data.data.user));
-    }
-    if (data?.data?.session) {
-      localStorage.setItem('session_data', JSON.stringify(data.data.session));
-    }
+    if (data?.data?.user) localStorage.setItem('user_data', JSON.stringify(data.data.user));
+    if (data?.data?.session) localStorage.setItem('session_data', JSON.stringify(data.data.session));
 
     const token = data?.data?.accessToken || (data as any)?.accessToken || data?.data?.session?.token || 'session';
     localStorage.setItem('auth_token', token);
@@ -50,40 +60,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async () => {
     try {
-      // Call the logout API
       await logoutUser();
-      
-      // Clear local storage
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_data');
-      localStorage.removeItem('session_data');
-      setIsAuthenticated(false);
-      
-      // Show success message
-      customToast.success('Logged out successfully');
     } catch (error: any) {
       console.error('Logout error:', error);
-      
-      // Even if API call fails, clear local storage
+      customToast.error(error.message || 'Failed to logout from server');
+    } finally {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_data');
       localStorage.removeItem('session_data');
       setIsAuthenticated(false);
-      
-      // Show error message
-      customToast.error(error.message || 'Failed to logout from server');
+      customToast.success('Logged out successfully');
+      window.location.replace('/login'); 
     }
   };
 
-  const value = {
-    isAuthenticated,
-    login,
-    logout,
-  };
+  const value = { isAuthenticated, login, logout };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
