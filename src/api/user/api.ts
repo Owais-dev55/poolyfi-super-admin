@@ -433,11 +433,9 @@ export async function resetPassword(payload: PasswordResetPayload): Promise<Pass
       method: 'PATCH',
       headers,
       body: JSON.stringify(payload),
-      mode: 'cors', 
-      credentials: 'omit', 
+      mode: 'cors',
+      credentials: 'omit',
     });
-    localStorage.removeItem('auth_token');
-    window.location.replace('/login');
   } catch (err: any) {
     console.error('Network error:', err);
     throw new Error('Network error. Please check your internet connection and API configuration.');
@@ -452,15 +450,11 @@ export async function resetPassword(payload: PasswordResetPayload): Promise<Pass
       if (Array.isArray(json?.errors) && json.errors[0]?.message) {
         return String(json.errors[0].message);
       }
-    } catch {
-      // ignore json parse errors
-    }
+    } catch {}
     try {
       const text = await response.text();
       if (text) return text;
-    } catch {
-      // ignore text read errors
-    }
+    } catch {}
     switch (response.status) {
       case 400:
         return 'Invalid password data. Please check your current password and new password requirements.';
@@ -478,18 +472,34 @@ export async function resetPassword(payload: PasswordResetPayload): Promise<Pass
   };
 
   if (!response.ok) {
+    // ❌ Don’t log out or redirect on error
     const message = await parseErrorMessage();
     throw new Error(message);
   }
 
+  // ✅ Only log out and redirect on success
   try {
     const data = await response.json();
+
+    // Confirm password reset success
+    if (!data.hasError) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+      localStorage.removeItem('session_data');
+      localStorage.setItem('logout', Date.now().toString()); // optional: trigger other tabs
+      window.location.replace('/login');
+    }
+
     return data;
   } catch {
-    // If response is not JSON, assume success
+    // If no JSON returned, assume success
+    localStorage.removeItem('auth_token');
+    localStorage.setItem('logout', Date.now().toString());
+    window.location.replace('/login');
     return {
       hasError: false,
-      message: 'Password updated successfully'
+      message: 'Password updated successfully',
     };
   }
 }
+
