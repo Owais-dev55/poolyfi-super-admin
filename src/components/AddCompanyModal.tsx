@@ -51,7 +51,6 @@ const AddCompanyModal = ({
   const [isLoadingSizes, setIsLoadingSizes] = useState(false);
   const { showToast } = useCustomToast();
 
-  // Fetch industries and company sizes from API
   useEffect(() => {
     const fetchData = async () => {
       if (!isOpen) return; // Only fetch when modal is open
@@ -124,7 +123,7 @@ const AddCompanyModal = ({
         name: values.companyName,
         address: values.companyAddressHidden,
         email: values.companyEmailHidden,
-        phone: values.companyPhoneHidden,
+        phone: values.CompanyPhoneHidden,
         websiteUrl: values.website,
         industryId: values.industryId,
         sizeId: values.sizeId,
@@ -133,7 +132,8 @@ const AddCompanyModal = ({
         ownerPhone: values.ownerPhoneHidden,
         ownerPassword: values.ownerPasswordHidden,
       };
-
+      console.log(payload.phone)
+      console.log("Payload for creating company:", payload);
       const response = await api.createCompany(payload);
 
       if (response.hasError) {
